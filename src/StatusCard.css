@@ -1,0 +1,19 @@
+.air-quality,
+.uv-index{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  width: auto;
+}
+.air-quality p{
+  margin: 10px 0px;
+  padding: 0px;
+}
+
+.air-quality img,
+.uv-index img{
+  height: 70px;
+  width: auto;
+}

@@ -1,0 +1,87 @@
+.card {
+  position: relative;
+  box-sizing: border-box;
+  width: 100px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+  padding: 10px 0px;
+  background-color: rgba(65, 65, 65, 0.308);
+  cursor: pointer;
+  margin-right: 10px;  
+  overflow:visible; 
+}
+
+.card-img{
+  position: absolute;
+  top: -0px;
+  right: -10px;
+  height: 50px;
+  width: 50px;
+  z-index: 20;
+  opacity: 1;
+  filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));
+}
+
+.weather-conclusion .temp {
+  position: relative;
+  font-size: 1.5em;
+  font-weight: 300;
+  right: 10px;
+  color: white;
+  padding: 0px;
+  margin: 5px 0px;
+  z-index: 200;
+}
+
+.minmaxContainer {
+  position: relative;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 200;
+}
+
+.min,
+.max {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0px 15px;
+  margin: 0px;
+}
+
+.max {
+  align-items: flex-start;
+  border-left: 1.5px solid white;
+}
+
+.maxHeading,
+.minHeading {
+  font-size: 0.7em;
+  font-weight: 600;
+  color: white;
+  margin: 5px 0px;
+}
+
+.maxTemp,
+.minTemp {
+  font-size: 0.7em;
+  font-weight: 500;
+  color: rgb(197, 197, 197);
+
+}
+
+.weather-conclusion .day {
+  padding: 5px 0px;
+  margin: 0px;
+  font-weight: 500;
+  font-size: 1em;
+  color: rgb(197, 197, 197);
+}
