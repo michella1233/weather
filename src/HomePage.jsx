@@ -8,13 +8,9 @@ import wind from './assets/wind.png'
 import rain from './assets/rain.png'
 import humidity from './assets/humidity.png'
 import craining from './assets/c-raining.png'
-import position from './assets/position.png'
-import search from './assets/search.png'
-import veryPoor from './assets/very-poor.png'
-import { useState } from 'react'
+import { RightContainer } from './RightContainer'
 
 export function HomePage() {
-  const [showSearch, setShowSearch] = useState(false);
 
   return (
     <div className='home-page-container'>
@@ -157,64 +153,7 @@ export function HomePage() {
           </div>
         </div>
       </div>
-      <div className="right-container">
-        <div className='right-header'>
-          <img className='position' src={position} />
-          <span>Delhi, India</span>
-          {showSearch && (
-            <input
-              type="text"
-              placeholder="Search city..."
-              className="search-input"
-            />
-          )}
-          <button className='search-button'
-            onClick={() => setShowSearch(!showSearch)}
-          ><img src={search} /></button>
-        </div>
-
-        <div className='right-hours'>
-          <span>Sunrise</span>
-          <div className="clock-card clock-card13">
-            <div className="clock">
-              <div className="hand hour"></div>
-              <div className="hand minute"></div>
-            </div>
-            <p className="time">5:45 AM</p>
-            <p className="label">Sunrise</p>
-          </div>
-
-<span>Golden Hour</span>
-          <div className="clock-card clock-card2">
-            <div className="clock">
-              <div className="hand hour"></div>
-              <div className="hand minute"></div>
-            </div>
-            <p className="time">6:38 PM</p>
-            <p className="label">Golden Hour</p>
-          </div>
-
-          <div className="clock-card clock-card13">
-            <div className="clock">
-              <div className="hand hour"></div>
-              <div className="hand minute"></div>
-            </div>
-            <p className="time">7:10 PM</p>
-            <p className="label">Sunset</p>
-          </div>
-        </div>
-
-        <div className='status-cards'>
-          <div className='air-quality'>
-            <p>Air Quality</p>
-          <img src={veryPoor} />
-          </div>
-          <div className='uv-index'>
-            <p>Uv Index</p>
-            <img src={veryPoor} />
-          </div>
-        </div>
-      </div>
+      <RightContainer />
     </div>
   )
 }
