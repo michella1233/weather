@@ -2,25 +2,39 @@ import './RightContainer.css'
 import position from './assets/position.png'
 import search from './assets/search.png'
 import veryPoor from './assets/very-poor.png'
-import { useState } from 'react'
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence, time } from "framer-motion";
 import axios from 'axios'
 
 export function RightContainer() {
   const [showSearch, setShowSearch] = useState(false);
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([])
+
+  function saveQueryChange(event) {
+    setQuery(event.target.value);
+    console.log(event.target.value)
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "enter") {
+      saveQueryChange()
+    }
+  }
+
 
   const apiKeyAutoCompletion = import.meta.env.VITE_MAPBOX_TOKEN;
 
-  async function searchCity(query) {
+  async function searchCity(q) {
     const url = "https://api.mapbox.com/search/geocode/v6/forward";
 
     try {
       const response = await axios.get(url, {
         params: {
-          q: query,
+          q,
           access_token: apiKeyAutoCompletion,
           autocomplete: true,
-          limit: 5,
+          limit: 10,
           types: "place,country"
         }
       });
@@ -39,73 +53,99 @@ export function RightContainer() {
   }
 
   (async () => {
-    const results = await searchCity("Man");
+    const results = await searchCity(query);
     console.log(results);
   })();
 
 
-  const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
+  async function handleChange(event) {
+  const value = event.target.value;
+  setQuery(value);
 
-  async function getCoordinates(query) {
-    try {
-      const response = await axios.get("https://api.opencagedata.com/geocode/v1/json", {
-        params: { q: query, key: apiKey },
-      });
-
-      console.log(response.data.results[0].geometry);
-    } catch (error) {
-      console.error(error);
-    }
+  if (value.trim() === "") {
+    setSuggestions([]);
+    return;
   }
 
-  getCoordinates("Greater Manchester, England, United Kingdom");
+  const results = await searchCity(value);
+  setSuggestions(results);
+}
 
 
-  async function searchPlace(query) {
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${apiKey}&limit=5`;
+  // const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
+  // async function getCoordinates(query) {
+  //   try {
+  //     const response = await axios.get("https://api.opencagedata.com/geocode/v1/json", {
+  //       params: { q: query, key: apiKey },
+  //     });
 
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
+  //     console.log(response.data.results[0].geometry);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
+  // getCoordinates("Greater Manchester, England, United Kingdom");
 
-      if (data.results.length > 0) {
-        return data.results.map(result => ({
-          city: result.components.city || result.components.town || result.components.village,
-          country: result.components.country
-        }));
-      } else {
-        return [];
-      }
-    } catch (error) {
-      console.error("Error fetching place:", error);
-      return [];
-    }
-  }
+  // async function searchPlace(query) {
+  //   const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${apiKey}&limit=5`;
 
-  // Example usage
-  searchPlace("Manchester, United Kingdom").then(suggestions => console.log(suggestions));
+  //   try {
+  //     const response = await fetch(url);
+  //     const data = await response.json();
+
+  //     if (data.results.length > 0) {
+  //       return data.results.map(result => ({
+  //         city: result.components.city || result.components.town || result.components.village,
+  //         country: result.components.country
+  //       }));
+  //     } else {
+  //       return [];
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching place:", error);
+  //     return [];
+  //   }
+  // }
+  // // Example usage
+  // searchPlace("Manchester, United Kingdom").then(suggestions => console.log(suggestions));
 
 
 
   return (
     <div className="right-container">
-      <div className='right-header'>
+      <div className={showSearch ? "right-header-show-search" : 'right-header'}>
         <AnimatePresence mode="wait">
           {showSearch ? (
-            <motion.input
-              key="search"
-              type="text"
-              placeholder=" Search a city..."
-              className="search-input"
-              initial={{ scaleX: 0, opacity: 0 }}
-              animate={{ scaleX: 1, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{
-                transformOrigin: "left center", // 👈 scale starts from the left
-                width: "72%",
-              }}
-            />
+            <motion.div
+              key="search-container"  // ✅ branch 1
+              className="input-suggestion-cont"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              <input
+                value={query}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                type="text"
+                placeholder=" Search a city..."
+                className="search-input"
+                style={{
+                  transformOrigin: "left center",
+                  width: "72%",
+                }}
+              />
+              <div className='suggestion-dropdown'>
+                {query && suggestions.length > 0 ? (
+                  suggestions.map((s, i) => (
+                    <div key={i} className="suggestion-item">
+                      {s.city}, {s.country}
+                    </div>
+                  ))
+                ) : ""}
+              </div>
+            </motion.div>
           ) : (
             <motion.div
               key="location"

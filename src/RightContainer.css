@@ -8,7 +8,7 @@
 
 .right-header {
   display: flex;
-  /* justify-content: flex-start; */
+  position: relative;
   height: 10%;
   flex-direction: row;
   align-items: center;
@@ -16,7 +16,7 @@
   width: 35vw;
 }
 
-.right-header .position {
+.position {
   height: 30px;
   width: auto;
   padding-right: 10px;
@@ -45,18 +45,35 @@
   width: auto;
 }
 
+.right-header-show-search{
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 10px;
+  width: 35vw;
+height: auto;
+}
+
+.input-suggestion-cont{
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+   width: 35vw;
+   height: auto;
+   gap: 5px;
+}
+
 .search-input {
   display: block;
   height: 1.4rem;
   padding: 0.5rem 0.75rem;
-  
   background-color:  rgba(255, 255, 255, 0.15);
   border: 1.5px solid #ddd;
   border-radius: 8px;
-
   font-size: 0.95rem;
   color: #ffffff;
-
   outline: none;
   transition: border 0.2s ease, box-shadow 0.2s ease;
 }
@@ -69,6 +86,31 @@
   border-color: #a67ecf; /* subtle purple to match your border-left */
   box-shadow: 0 0 4px rgba(166, 126, 207, 0.4);
 }
+
+.suggestion-dropdown {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 35vw;
+  height: auto;
+  overflow-y: scroll;
+  z-index: 10;
+  justify-content: flex-start;
+  max-height: 22vh;
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  width: 72%;
+}
+
+.suggestion-item:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border: 0 2px 6px rgba(0,0,0,0.15);
+}
+
 
 
 .location{
@@ -84,7 +126,7 @@
   display: flex;
   gap: 20px;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 10px;
   height: auto;
 }
 
@@ -93,28 +135,7 @@
   flex-direction: row;
   gap: 0px;
   justify-content: center;
-  margin-top: 20px;
+  margin: 10px;
   height: 200px;
   width: 100%;
-}
-
-.suggestions-dropdown {
-  position: absolute;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-top: 4px;
-  width: 70%;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 10;
-}
-
-.suggestion-item {
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.suggestion-item:hover {
-  background-color: #f2f2f2;
 }

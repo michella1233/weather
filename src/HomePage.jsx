@@ -7,6 +7,7 @@ import { RightContainer } from './RightContainer'
 import {LeftContainer} from './LeftContainer'
 
 export function HomePage() {
+  
 
   return (
     <div className='home-page-container'>
