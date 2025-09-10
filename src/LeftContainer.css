@@ -1,0 +1,122 @@
+
+.left-container {
+  width: 65vw;
+  padding: 4%;
+  box-sizing: border-box;
+}
+
+.header-weather {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 20%;
+}
+
+.header-degree {
+  box-sizing: border-box;
+  padding: 10px;
+  height: 25%;
+  display: flex;
+  align-items: flex-start;
+}
+
+.header-degree .temp {
+  font-family: 'Roboto', sans-serif;
+  font-size: 7.5rem;
+  font-weight: 100;
+  text-shadow: -3px -3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.header-degree .degree {
+  font-weight: 300;
+  font-size: 2rem;
+  margin-top: 8px;
+  opacity: 0.8;
+  text-shadow: -3px -3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.header-degree .unit {
+  font-weight: 300;
+  font-size: 2rem;
+  margin-top: 8px;
+  margin-left: 3px;
+  opacity: 0.8;
+  text-shadow: -3px -3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.date-time {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  height: 15%;
+}
+
+.date-time .date {
+  font-size: 1.5rem;
+}
+
+.date-time .day-time {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.date-time .day {
+  width: 90px;
+}
+
+.date-time .time {
+  padding-left: 25px;
+  border-left: 1px solid #ffffff;
+}
+
+.weather-condition {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 10%;
+  width: 100%;
+}
+
+.weather-condition img {
+  height: 1rem;
+  width: auto;
+  padding-right: 10px;
+}
+
+.weather-condition .wind {
+  display: flex;
+  justify-content: center;
+  width: 25%;
+}
+
+.weather-condition .humidity {
+  display: flex;
+  justify-content: center;
+  width: 25%;
+  border-left: 1px solid #ffffff;
+}
+
+.weather-condition .rain {
+  display: flex;
+  justify-content: center;
+  width: 25%;
+  border-left: 1px solid #ffffff;
+}
+
+.weather-conclusion {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  height: 30%;
+  width: 100%;
+  overflow-x: auto;
+  /* Enable horizontal scrolling */
+  overflow-y: visible;
+  /* Prevent vertical overflow *
+  white-space: nowrap;  /* Keep cards in one row */
+  scrollbar-width: thin;
+  /* Thin scrollbar for Firefox */
+}

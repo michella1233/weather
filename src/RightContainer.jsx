@@ -2,54 +2,46 @@ import './RightContainer.css'
 import position from './assets/position.png'
 import search from './assets/search.png'
 import veryPoor from './assets/very-poor.png'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
 import axios from 'axios'
 
 export function RightContainer() {
   const [showSearch, setShowSearch] = useState(false);
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
 
-  async function searchCity(q) {
-    if (!q) return [];
+  const apiKeyAutoCompletion = import.meta.env.VITE_MAPBOX_TOKEN;
+
+  async function searchCity(query) {
+    const url = "https://api.mapbox.com/search/geocode/v6/forward";
+
     try {
-      const url = "https://api.mapbox.com/search/geocode/v6/forward";
-      const token = import.meta.env.VITE_MAPBOX_TOKEN;
-      const res = await axios.get(url, {
+      const response = await axios.get(url, {
         params: {
-          q,
-          access_token: token,
+          q: query,
+          access_token: apiKeyAutoCompletion,
           autocomplete: true,
           limit: 5,
           types: "place,country"
         }
       });
-      return res.data.features.map(f => ({
-        city: f.properties?.name,
-        country: f.properties?.context?.country?.name,
-        full: f.properties?.place_formatted,
-        lng: f.geometry?.coordinates[0],
-        lat: f.geometry?.coordinates[1]
+
+      return response.data.features.map(f => ({
+        city: f.properties?.name, // ✅ city name
+        country: f.properties?.context?.country?.name, // ✅ country name
+        full: f.properties?.place_formatted, // ✅ "Jakarta, Indonesia"
+        longitude: f.geometry?.coordinates[0], // ✅
+        latitude: f.geometry?.coordinates[1]
       }));
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Error fetching from Mapbox:", error.response?.data || error.message);
       return [];
     }
   }
 
-useEffect(() => {
-    const delayDebounce = setTimeout(async () => {
-      if (query.length > 1) {
-        const results = await searchCity(query);
-        setSuggestions(results);
-      } else {
-        setSuggestions([]);
-      }
-    }, 300); // debounce
-
-    return () => clearTimeout(delayDebounce);
-  }, [query]);
+  (async () => {
+    const results = await searchCity("Man");
+    console.log(results);
+  })();
 
 
   const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
@@ -100,47 +92,20 @@ useEffect(() => {
       <div className='right-header'>
         <AnimatePresence mode="wait">
           {showSearch ? (
-            <motion.div
+            <motion.input
               key="search"
+              type="text"
+              placeholder=" Search a city..."
+              className="search-input"
               initial={{ scaleX: 0, opacity: 0 }}
               animate={{ scaleX: 1, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              style={{ transformOrigin: "left center", width: "100%" }}
-            >
-              <input
-                key="search"
-                type="text"
-                placeholder=" Search a city..."
-                className="search-input"
-                initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 1, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  transformOrigin: "left center", // 👈 scale starts from the left
-                  width: "72%",
-                }}
-              />
-              {suggestions.length > 0 && (
-                <div className="suggestions-dropdown">
-                  {suggestions.map((s, i) => (
-                    <div
-                      key={i}
-                      className="suggestion-item"
-                      onClick={() => {
-                        setQuery(s.full);
-                        setSuggestions([]);
-                        setShowSearch(false);
-                        console.log("Selected:", s);
-                      }}
-                    >
-                      {s.full}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
+              style={{
+                transformOrigin: "left center", // 👈 scale starts from the left
+                width: "72%",
+              }}
+            />
           ) : (
             <motion.div
               key="location"
