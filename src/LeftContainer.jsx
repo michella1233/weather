@@ -25,6 +25,7 @@ export function LeftContainer({ coordinates }) {
         "longitude": coordinates.longitude,
         "hourly": ["temperature_2m", "wind_speed_10m"],
         "current": ["temperature_2m", "apparent_temperature"],
+        "timezone": "auto",
       };
       const url = "https://api.open-meteo.com/v1/forecast";
       const responses = await fetchWeatherApi(url, params);
@@ -33,6 +34,8 @@ export function LeftContainer({ coordinates }) {
       const utcOffsetSeconds = response.utcOffsetSeconds();
 
       const current = response.current();
+      const timezone = response.timezone();
+      const timezoneAbbreviation = response.timezoneAbbreviation();
       const hourly = response.hourly();
 
       const weatherData = {
@@ -46,6 +49,8 @@ export function LeftContainer({ coordinates }) {
         }
       }
 
+      const localTime = new Date().toLocaleString("en-US", { timeZone: timezone });
+
       const currentTemp = Math.round(weatherData.current.temperature_2m)
       const currentTime = weatherData.current.time
       const currentWind = weatherData.hourly.wind_speed_10m
@@ -53,6 +58,8 @@ export function LeftContainer({ coordinates }) {
       setCurrentTemp(currentTemp)
       setCurrentTime(currentTime)
       setCurrentWind(currentWind)
+      console.log(`\nTimezone: ${timezone} ${timezoneAbbreviation}`)
+      console.log("Local time:", localTime);
     }
     temperatureNow();
   }, [coordinates])
@@ -69,8 +76,6 @@ export function LeftContainer({ coordinates }) {
   //       clearInterval(interval);
   //   }
   // },[currentTime])
-
-  // console.log(currentWind)
 
 
   return (

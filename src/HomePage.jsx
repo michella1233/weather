@@ -17,7 +17,8 @@ export function HomePage() {
   return (
     <div className='home-page-container'>
       <LeftContainer
-        coordinates={coordinates} />
+        coordinates={coordinates}
+      />
       <RightContainer
         coordinates={coordinates}
         setCoordinates={setCoordinates}
