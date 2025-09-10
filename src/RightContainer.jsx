@@ -2,26 +2,25 @@ import './RightContainer.css'
 import position from './assets/position.png'
 import search from './assets/search.png'
 import veryPoor from './assets/very-poor.png'
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence, time } from "framer-motion";
+import { useState } from 'react'
+import { motion, AnimatePresence } from "framer-motion";
 import axios from 'axios'
 
-export function RightContainer() {
+export function RightContainer({ coordinates, setCoordinates, selectedPlace, setSelectedPlace }) {
   const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([])
 
-  function saveQueryChange(event) {
-    setQuery(event.target.value);
-    console.log(event.target.value)
+  function handleSelectSuggestion(suggestion) {
+    setCoordinates({
+      longitude: suggestion.longitude,
+      latitude: suggestion.latitude,
+    });
+    setSelectedPlace(suggestion);
+    setQuery(`${suggestion.city}, ${suggestion.country}`);
+    setSuggestions([]); // clear dropdown
+    setShowSearch(false)
   }
-
-  function handleKeyDown(event) {
-    if (event.key === "enter") {
-      saveQueryChange()
-    }
-  }
-
 
   const apiKeyAutoCompletion = import.meta.env.VITE_MAPBOX_TOKEN;
 
@@ -52,24 +51,18 @@ export function RightContainer() {
     }
   }
 
-  (async () => {
-    const results = await searchCity(query);
-    console.log(results);
-  })();
-
-
   async function handleChange(event) {
-  const value = event.target.value;
-  setQuery(value);
+    const value = event.target.value;
+    setQuery(value);
 
-  if (value.trim() === "") {
-    setSuggestions([]);
-    return;
+    if (value.trim() === "") {
+      setSuggestions([]);
+      return;
+    }
+
+    const results = await searchCity(value);
+    setSuggestions(results);
   }
-
-  const results = await searchCity(value);
-  setSuggestions(results);
-}
 
 
   // const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
@@ -127,7 +120,6 @@ export function RightContainer() {
               <input
                 value={query}
                 onChange={handleChange}
-                onKeyDown={handleKeyDown}
                 type="text"
                 placeholder=" Search a city..."
                 className="search-input"
@@ -139,7 +131,11 @@ export function RightContainer() {
               <div className='suggestion-dropdown'>
                 {query && suggestions.length > 0 ? (
                   suggestions.map((s, i) => (
-                    <div key={i} className="suggestion-item">
+                    <div
+                      key={i}
+                      className="suggestion-item"
+                      onClick={() => handleSelectSuggestion(s)}
+                    >
                       {s.city}, {s.country}
                     </div>
                   ))
@@ -156,7 +152,11 @@ export function RightContainer() {
               transition={{ duration: 0.3 }}
             >
               <img className="position" src={position} />
-              <span className='position-city'>Delhi, India</span>
+              <span className='position-city'>
+                {selectedPlace
+                  ? `${selectedPlace.city}, ${selectedPlace.country}`
+                  : "Jakarta, Indonesia"}
+              </span>
             </motion.div>
           )}
         </AnimatePresence>

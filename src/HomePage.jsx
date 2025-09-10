@@ -4,15 +4,26 @@ import './WeatherCard.css'
 import './GoldenHour.css'
 import './StatusCard.css'
 import { RightContainer } from './RightContainer'
-import {LeftContainer} from './LeftContainer'
+import { LeftContainer } from './LeftContainer'
+import { useState } from 'react'
 
 export function HomePage() {
-  
+  const [coordinates, setCoordinates] = useState({
+    latitude: -6.1818,   // ✅ default Jakarta
+    longitude: 106.8223
+  });
+  const [selectedPlace, setSelectedPlace] = useState(null);
 
   return (
     <div className='home-page-container'>
-      <LeftContainer />
-      <RightContainer />
+      <LeftContainer
+        coordinates={coordinates} />
+      <RightContainer
+        coordinates={coordinates}
+        setCoordinates={setCoordinates}
+        selectedPlace={selectedPlace}
+        setSelectedPlace={setSelectedPlace}
+      />
     </div>
   )
 }

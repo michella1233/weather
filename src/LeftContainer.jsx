@@ -11,7 +11,7 @@ import advancedFormat from "dayjs/plugin/advancedFormat";
 
 dayjs.extend(advancedFormat);
 
-export function LeftContainer() {
+export function LeftContainer({ coordinates }) {
 
 
   const [currentTemp, setCurrentTemp] = useState(null);
@@ -21,8 +21,8 @@ export function LeftContainer() {
   useEffect(() => {
     const temperatureNow = async () => {
       const params = {
-        "latitude": -6.1818,
-        "longitude": 106.8223,
+        "latitude": coordinates.latitude,
+        "longitude": coordinates.longitude,
         "hourly": ["temperature_2m", "wind_speed_10m"],
         "current": ["temperature_2m", "apparent_temperature"],
       };
@@ -55,7 +55,7 @@ export function LeftContainer() {
       setCurrentWind(currentWind)
     }
     temperatureNow();
-  }, [])
+  }, [coordinates])
 
 
   // useEffect(()=>{
