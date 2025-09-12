@@ -7,9 +7,13 @@ import './LeftContainer.css'
 import { fetchWeatherApi } from 'openmeteo';
 import { useEffect, useState } from 'react';
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 
 dayjs.extend(advancedFormat);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export function LeftContainer({ coordinates }) {
 
@@ -17,66 +21,106 @@ export function LeftContainer({ coordinates }) {
   const [currentTemp, setCurrentTemp] = useState(null);
   const [currentTime, setCurrentTime] = useState(null);
   const [currentWind, setCurrentWind] = useState(null);
+  const [currentHumidity, setCurrentHumidity] = useState(null);
+  const [currentRain, setCurrentRain] = useState(null);
+  const [weekdays, setWeekdays] = useState([]);
+  const [maxTemp, setMaxTemp] = useState([]);
+  const [minTemp, setMinTemp] = useState([]);
 
   useEffect(() => {
     const temperatureNow = async () => {
       const params = {
         "latitude": coordinates.latitude,
         "longitude": coordinates.longitude,
-        "hourly": ["temperature_2m", "wind_speed_10m"],
-        "current": ["temperature_2m", "apparent_temperature"],
+        "daily": ["temperature_2m_max", "temperature_2m_min", "sunrise", "sunset", "uv_index_max", "precipitation_probability_max", "weather_code"],
+        "current": ["temperature_2m", "wind_speed_10m", "relative_humidity_2m"],
         "timezone": "auto",
       };
       const url = "https://api.open-meteo.com/v1/forecast";
       const responses = await fetchWeatherApi(url, params);
 
       const response = responses[0];
+      const timezone = response.timezone();
       const utcOffsetSeconds = response.utcOffsetSeconds();
 
       const current = response.current();
-      const timezone = response.timezone();
-      const timezoneAbbreviation = response.timezoneAbbreviation();
-      const hourly = response.hourly();
+      const daily = response.daily();
+
+      const sunrise = daily.variables(2);
+      const sunset = daily.variables(3);
 
       const weatherData = {
         current: {
           time: new Date((Number(current.time()) + utcOffsetSeconds) * 1000),
           temperature_2m: current.variables(0).value(),
-          apparent_temperature: current.variables(1).value(),
+          wind_speed_10m: current.variables(1).value(),
+          relative_humidity_2m: current.variables(2).value(),
         },
-        hourly: {
-          wind_speed_10m: hourly.variables(1).valuesArray(),
-        }
+        daily: {
+          time: [...Array((Number(daily.timeEnd()) - Number(daily.time())) / daily.interval())].map(
+            (_, i) => new Date((Number(daily.time()) + i * daily.interval() + utcOffsetSeconds) * 1000)
+          ),
+          temperature_2m_max: daily.variables(0).valuesArray(),
+          temperature_2m_min: daily.variables(1).valuesArray(),
+          // Map Int64 values to according structure
+          sunrise: [...Array(sunrise.valuesInt64Length())].map(
+            (_, i) => new Date((Number(sunrise.valuesInt64(i)) + utcOffsetSeconds) * 1000)
+          ),
+          // Map Int64 values to according structure
+          sunset: [...Array(sunset.valuesInt64Length())].map(
+            (_, i) => new Date((Number(sunset.valuesInt64(i)) + utcOffsetSeconds) * 1000)
+          ),
+          uv_index_max: daily.variables(4).valuesArray(),
+          precipitation_probability_max: daily.variables(5).valuesArray(),
+          weather_code: daily.variables(6).valuesArray(),
+        },
       }
 
-      const localTime = new Date().toLocaleString("en-US", { timeZone: timezone });
+      const currentTemp = Math.round(weatherData.current.temperature_2m);
 
-      const currentTemp = Math.round(weatherData.current.temperature_2m)
-      const currentTime = weatherData.current.time
-      const currentWind = weatherData.hourly.wind_speed_10m
+      const localTime = new Date().toLocaleString("en-US", { timeZone: timezone });
+      const currentTime = localTime
+
+      const windSpeedMs = weatherData.current.wind_speed_10m;
+      const windSpeedKmh = (windSpeedMs * 3.6).toFixed(1);
+      const currentWind = windSpeedKmh
+      const currentHumidity = weatherData.current.relative_humidity_2m
+
+      const currentRain = weatherData.daily.precipitation_probability_max[0];
+
+      const formattedWeekdays = weatherData.daily.time.map(date =>
+        date.toLocaleDateString("en-US", { weekday: "long" })
+      );
+
+      const fromattedMaxTemp = weatherData.daily.temperature_2m_max.map(max => Math.round(max))
+       const fromattedMinTemp = weatherData.daily.temperature_2m_min.map(min => Math.round(min))
 
       setCurrentTemp(currentTemp)
       setCurrentTime(currentTime)
       setCurrentWind(currentWind)
-      console.log(`\nTimezone: ${timezone} ${timezoneAbbreviation}`)
-      console.log("Local time:", localTime);
+      setCurrentHumidity(currentHumidity)
+      setCurrentRain(currentRain)
+      setWeekdays(formattedWeekdays)
+      setMaxTemp(fromattedMaxTemp)
+      setMinTemp(fromattedMinTemp)
+      // console.log(`\nCurrent relative_humidity_2m: ${weatherData.current.relative_humidity_2m}`)
+      console.log("\nDaily data", weatherData.daily)
+      console.log(fromattedMaxTemp);
+      console.log(fromattedMinTemp)
     }
     temperatureNow();
   }, [coordinates])
 
 
-  // useEffect(()=>{
-  //   if(!currentTime){
-  //     return
-  //   } else if (currentTime){
-  //     const interval = setInterval(()=>{
-  //      setCurrentTime(dayjs(currentTime).add(1, "minute").toDate()
-  //         );
-  //       }, 60000);
-  //       clearInterval(interval);
-  //   }
-  // },[currentTime])
+  useEffect(() => {
+    if (!currentTime) return;
 
+    const interval = setInterval(() => {
+      setCurrentTime(prevTime => dayjs(prevTime).add(1, "minute").toDate());
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [currentTime]);  //update the minute
 
   return (
     <div className="left-container">
@@ -106,11 +150,11 @@ export function LeftContainer({ coordinates }) {
       </div>
       <div className='weather-condition'>
         <div className='wind'>
-          <img src={wind} />wind 5.5 km/h</div>
+          <img src={wind} />wind {currentWind} km/h</div>
         <div className='humidity'>
-          <img src={humidity} />humidity 74 %</div>
+          <img src={humidity} />humidity {currentHumidity} %</div>
         <div className='rain'>
-          <img src={rain} />rain 0.27 %</div>
+          <img src={rain} />rain {currentRain} %</div>
       </div>
       <div className='weather-conclusion'>
         <div className='card'>
@@ -119,14 +163,14 @@ export function LeftContainer({ coordinates }) {
           <div className="minmaxContainer">
             <div className="min">
               <p className="minHeading">Min</p>
-              <p className="minTemp">26°C</p>
+              <p className="minTemp">{minTemp[0]}°C</p>
             </div>
             <div className="max">
               <p className="maxHeading">Max</p>
-              <p className="maxTemp">34°C</p>
+              <p className="maxTemp">{maxTemp[0]}°C</p>
             </div>
           </div>
-          <p className="day">Thursday</p>
+          <p className="day">Today</p>
         </div>
         <div className='card'>
           <img src={craining} className='card-img' />
@@ -141,7 +185,7 @@ export function LeftContainer({ coordinates }) {
               <p className="maxTemp">34°C</p>
             </div>
           </div>
-          <p className="day">Thursday</p>
+          <p className="day">{weekdays[1]}</p>
         </div>
         <div className='card'>
           <img src={craining} className='card-img' />
@@ -156,7 +200,7 @@ export function LeftContainer({ coordinates }) {
               <p className="maxTemp">34°C</p>
             </div>
           </div>
-          <p className="day">Thursday</p>
+          <p className="day">{weekdays[2]}</p>
         </div>
         <div className='card'>
           <img src={craining} className='card-img' />
@@ -171,7 +215,7 @@ export function LeftContainer({ coordinates }) {
               <p className="maxTemp">34°C</p>
             </div>
           </div>
-          <p className="day">Thursday</p>
+          <p className="day">{weekdays[3]}</p>
         </div>
         <div className='card'>
           <img src={craining} className='card-img' />
@@ -186,7 +230,7 @@ export function LeftContainer({ coordinates }) {
               <p className="maxTemp">34°C</p>
             </div>
           </div>
-          <p className="day">Thursday</p>
+          <p className="day">{weekdays[4]}</p>
         </div>
         <div className='card'>
           <img src={craining} className='card-img' />
@@ -201,7 +245,7 @@ export function LeftContainer({ coordinates }) {
               <p className="maxTemp">34°C</p>
             </div>
           </div>
-          <p className="day">Thursday</p>
+          <p className="day">{weekdays[5]}</p>
         </div>
         <div className='card'>
           <img src={craining} className='card-img' />
@@ -216,7 +260,7 @@ export function LeftContainer({ coordinates }) {
               <p className="maxTemp">34°C</p>
             </div>
           </div>
-          <p className="day">Thursday</p>
+          <p className="day">{weekdays[6]}</p>
         </div>
       </div>
     </div>
