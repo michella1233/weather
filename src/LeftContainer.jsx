@@ -2,7 +2,6 @@ import cloudy from './assets/cloudy.png'
 import wind from './assets/wind.png'
 import rain from './assets/rain.png'
 import humidity from './assets/humidity.png'
-import craining from './assets/c-raining.png'
 import './LeftContainer.css'
 import { fetchWeatherApi } from 'openmeteo';
 import { useEffect, useState } from 'react';
@@ -10,6 +9,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import advancedFormat from "dayjs/plugin/advancedFormat";
+import { weatherIcons } from './weatherIcons'
 
 dayjs.extend(advancedFormat);
 dayjs.extend(utc);
@@ -17,6 +17,7 @@ dayjs.extend(timezone);
 
 export function LeftContainer({ coordinates }) {
 
+  const [degreeToggle, setDegreeToggle] = useState(false)
 
   const [currentTemp, setCurrentTemp] = useState(null);
   const [currentTime, setCurrentTime] = useState(null);
@@ -24,6 +25,10 @@ export function LeftContainer({ coordinates }) {
   const [currentHumidity, setCurrentHumidity] = useState(null);
   const [currentRain, setCurrentRain] = useState(null);
   const [cards, setCards] = useState([])
+
+  function changeDegree() {
+    setDegreeToggle(!degreeToggle)
+  }
 
   useEffect(() => {
     const temperatureNow = async () => {
@@ -124,11 +129,11 @@ export function LeftContainer({ coordinates }) {
     <div className="left-container">
       <div className='header-weather'>
         <img src={cloudy} />
-        <div className="toggle-button-cover">
-          <div className="button r" id="button-3">
-            <input type="checkbox" className="checkbox" />
-            <div className="knobs"></div>
-            <div className="layer"></div>
+        <div onClick={changeDegree} className={degreeToggle ? 'degree-toggle' : 'degree-toggle-f'}>
+          <div className={`degree-label ${degreeToggle ? 'C1' : 'F1'}`}>
+            <span className={degreeToggle ? 'C' : 'F'}>
+              {degreeToggle ? '°C' : '°F'}
+            </span>
           </div>
         </div>
       </div>
@@ -158,7 +163,10 @@ export function LeftContainer({ coordinates }) {
         {cards.map((card, index) => {
           return (
             <div key={index} className='card'>
-              <img src={craining} className='card-img' />
+              <img
+                src={weatherIcons[card.code]}
+                alt="Weather icon"
+                className='card-img' />
               <div className="minmaxContainer">
                 <div className="min">
                   <p className="minHeading">Min</p>
