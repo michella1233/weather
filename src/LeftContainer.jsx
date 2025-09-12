@@ -23,9 +23,7 @@ export function LeftContainer({ coordinates }) {
   const [currentWind, setCurrentWind] = useState(null);
   const [currentHumidity, setCurrentHumidity] = useState(null);
   const [currentRain, setCurrentRain] = useState(null);
-  const [weekdays, setWeekdays] = useState([]);
-  const [maxTemp, setMaxTemp] = useState([]);
-  const [minTemp, setMinTemp] = useState([]);
+  const [cards, setCards] = useState([])
 
   useEffect(() => {
     const temperatureNow = async () => {
@@ -57,11 +55,14 @@ export function LeftContainer({ coordinates }) {
           relative_humidity_2m: current.variables(2).value(),
         },
         daily: {
-          time: [...Array((Number(daily.timeEnd()) - Number(daily.time())) / daily.interval())].map(
-            (_, i) => new Date((Number(daily.time()) + i * daily.interval() + utcOffsetSeconds) * 1000)
-          ),
-          temperature_2m_max: daily.variables(0).valuesArray(),
-          temperature_2m_min: daily.variables(1).valuesArray(),
+          card: {
+            time: [...Array((Number(daily.timeEnd()) - Number(daily.time())) / daily.interval())].map(
+              (_, i) => new Date((Number(daily.time()) + i * daily.interval() + utcOffsetSeconds) * 1000)
+            ),
+            temperature_2m_max: daily.variables(0).valuesArray(),
+            temperature_2m_min: daily.variables(1).valuesArray(),
+            weather_code: daily.variables(6).valuesArray(),
+          },
           // Map Int64 values to according structure
           sunrise: [...Array(sunrise.valuesInt64Length())].map(
             (_, i) => new Date((Number(sunrise.valuesInt64(i)) + utcOffsetSeconds) * 1000)
@@ -72,7 +73,6 @@ export function LeftContainer({ coordinates }) {
           ),
           uv_index_max: daily.variables(4).valuesArray(),
           precipitation_probability_max: daily.variables(5).valuesArray(),
-          weather_code: daily.variables(6).valuesArray(),
         },
       }
 
@@ -88,25 +88,23 @@ export function LeftContainer({ coordinates }) {
 
       const currentRain = weatherData.daily.precipitation_probability_max[0];
 
-      const formattedWeekdays = weatherData.daily.time.map(date =>
-        date.toLocaleDateString("en-US", { weekday: "long" })
-      );
 
-      const fromattedMaxTemp = weatherData.daily.temperature_2m_max.map(max => Math.round(max))
-       const fromattedMinTemp = weatherData.daily.temperature_2m_min.map(min => Math.round(min))
+      const formattedCards = weatherData.daily.card.time.map((date, i) => ({
+        time: date.toLocaleDateString("en-US", { weekday: "long" }),
+        min: Math.round(weatherData.daily.card.temperature_2m_min[i]),
+        max: Math.round(weatherData.daily.card.temperature_2m_max[i]),
+        code: weatherData.daily.card.weather_code[i],
+      }));
 
       setCurrentTemp(currentTemp)
       setCurrentTime(currentTime)
       setCurrentWind(currentWind)
       setCurrentHumidity(currentHumidity)
       setCurrentRain(currentRain)
-      setWeekdays(formattedWeekdays)
-      setMaxTemp(fromattedMaxTemp)
-      setMinTemp(fromattedMinTemp)
+      setCards(formattedCards);
       // console.log(`\nCurrent relative_humidity_2m: ${weatherData.current.relative_humidity_2m}`)
-      console.log("\nDaily data", weatherData.daily)
-      console.log(fromattedMaxTemp);
-      console.log(fromattedMinTemp)
+      console.log("\nDaily data", weatherData.daily.card)
+      console.log(formattedCards)
     }
     temperatureNow();
   }, [coordinates])
@@ -157,111 +155,24 @@ export function LeftContainer({ coordinates }) {
           <img src={rain} />rain {currentRain} %</div>
       </div>
       <div className='weather-conclusion'>
-        <div className='card'>
-          <img src={craining} className='card-img' />
-          <p className="temp">31°C</p>
-          <div className="minmaxContainer">
-            <div className="min">
-              <p className="minHeading">Min</p>
-              <p className="minTemp">{minTemp[0]}°C</p>
+        {cards.map((card, index) => {
+          return (
+            <div key={index} className='card'>
+              <img src={craining} className='card-img' />
+              <div className="minmaxContainer">
+                <div className="min">
+                  <p className="minHeading">Min</p>
+                  <p className="minTemp">{card.min}°C</p>
+                </div>
+                <div className="max">
+                  <p className="maxHeading">Max</p>
+                  <p className="maxTemp">{card.max}°C</p>
+                </div>
+              </div>
+              <p className="day">{index === 0 ? 'Today' : card.time}</p>
             </div>
-            <div className="max">
-              <p className="maxHeading">Max</p>
-              <p className="maxTemp">{maxTemp[0]}°C</p>
-            </div>
-          </div>
-          <p className="day">Today</p>
-        </div>
-        <div className='card'>
-          <img src={craining} className='card-img' />
-          <p className="temp">31°C</p>
-          <div className="minmaxContainer">
-            <div className="min">
-              <p className="minHeading">Min</p>
-              <p className="minTemp">26°C</p>
-            </div>
-            <div className="max">
-              <p className="maxHeading">Max</p>
-              <p className="maxTemp">34°C</p>
-            </div>
-          </div>
-          <p className="day">{weekdays[1]}</p>
-        </div>
-        <div className='card'>
-          <img src={craining} className='card-img' />
-          <p className="temp">31°C</p>
-          <div className="minmaxContainer">
-            <div className="min">
-              <p className="minHeading">Min</p>
-              <p className="minTemp">26°C</p>
-            </div>
-            <div className="max">
-              <p className="maxHeading">Max</p>
-              <p className="maxTemp">34°C</p>
-            </div>
-          </div>
-          <p className="day">{weekdays[2]}</p>
-        </div>
-        <div className='card'>
-          <img src={craining} className='card-img' />
-          <p className="temp">31°C</p>
-          <div className="minmaxContainer">
-            <div className="min">
-              <p className="minHeading">Min</p>
-              <p className="minTemp">26°C</p>
-            </div>
-            <div className="max">
-              <p className="maxHeading">Max</p>
-              <p className="maxTemp">34°C</p>
-            </div>
-          </div>
-          <p className="day">{weekdays[3]}</p>
-        </div>
-        <div className='card'>
-          <img src={craining} className='card-img' />
-          <p className="temp">31°C</p>
-          <div className="minmaxContainer">
-            <div className="min">
-              <p className="minHeading">Min</p>
-              <p className="minTemp">26°C</p>
-            </div>
-            <div className="max">
-              <p className="maxHeading">Max</p>
-              <p className="maxTemp">34°C</p>
-            </div>
-          </div>
-          <p className="day">{weekdays[4]}</p>
-        </div>
-        <div className='card'>
-          <img src={craining} className='card-img' />
-          <p className="temp">31°C</p>
-          <div className="minmaxContainer">
-            <div className="min">
-              <p className="minHeading">Min</p>
-              <p className="minTemp">26°C</p>
-            </div>
-            <div className="max">
-              <p className="maxHeading">Max</p>
-              <p className="maxTemp">34°C</p>
-            </div>
-          </div>
-          <p className="day">{weekdays[5]}</p>
-        </div>
-        <div className='card'>
-          <img src={craining} className='card-img' />
-          <p className="temp">31°C</p>
-          <div className="minmaxContainer">
-            <div className="min">
-              <p className="minHeading">Min</p>
-              <p className="minTemp">26°C</p>
-            </div>
-            <div className="max">
-              <p className="maxHeading">Max</p>
-              <p className="maxTemp">34°C</p>
-            </div>
-          </div>
-          <p className="day">{weekdays[6]}</p>
-        </div>
+          )
+        })}
       </div>
     </div>
   )
