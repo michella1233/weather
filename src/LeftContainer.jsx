@@ -9,7 +9,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import advancedFormat from "dayjs/plugin/advancedFormat";
-import { weatherIcons } from './weatherIcons'
+import { weatherIcons } from './weatherIcons';
+import { celsiusToFahrenheit } from './convertDegree';
 
 dayjs.extend(advancedFormat);
 dayjs.extend(utc);
@@ -17,7 +18,7 @@ dayjs.extend(timezone);
 
 export function LeftContainer({ coordinates }) {
 
-  const [degreeToggle, setDegreeToggle] = useState(false)
+  const [degreeToggle, setDegreeToggle] = useState(true)
 
   const [currentTemp, setCurrentTemp] = useState(null);
   const [currentTime, setCurrentTime] = useState(null);
@@ -109,7 +110,6 @@ export function LeftContainer({ coordinates }) {
       setCards(formattedCards);
       // console.log(`\nCurrent relative_humidity_2m: ${weatherData.current.relative_humidity_2m}`)
       console.log("\nDaily data", weatherData.daily.card)
-      console.log(formattedCards)
     }
     temperatureNow();
   }, [coordinates])
@@ -138,9 +138,9 @@ export function LeftContainer({ coordinates }) {
         </div>
       </div>
       <div className='header-degree'>
-        <span className="temp">{currentTemp}</span>
+        <span className="temp">{degreeToggle ? currentTemp : celsiusToFahrenheit(currentTemp)}</span>
         <span className="degree">°</span>
-        <span className="unit">C</span>
+        <span className="unit">{degreeToggle ? 'C' : 'F'}</span>
       </div>
       <div className='date-time'>
         <div className='date'>{currentTime
@@ -170,11 +170,11 @@ export function LeftContainer({ coordinates }) {
               <div className="minmaxContainer">
                 <div className="min">
                   <p className="minHeading">Min</p>
-                  <p className="minTemp">{card.min}°C</p>
+                  <p className="minTemp">{degreeToggle ? card.min : celsiusToFahrenheit(card.min)}°{degreeToggle ? 'C' : 'F'}</p>
                 </div>
                 <div className="max">
                   <p className="maxHeading">Max</p>
-                  <p className="maxTemp">{card.max}°C</p>
+                  <p className="maxTemp">{degreeToggle ? card.max : celsiusToFahrenheit(card.max)}°{degreeToggle ? 'C' : 'F'}</p>
                 </div>
               </div>
               <p className="day">{index === 0 ? 'Today' : card.time}</p>

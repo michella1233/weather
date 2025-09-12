@@ -2,14 +2,53 @@ import './RightContainer.css'
 import position from './assets/position.png'
 import search from './assets/search.png'
 import veryPoor from './assets/very-poor.png'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
 import axios from 'axios'
+import { fetchWeatherApi } from 'openmeteo';
+import { calculateAQI } from './calculateAqi';
+import { airCondition } from './exportCondition'
+
 
 export function RightContainer({ coordinates, setCoordinates, selectedPlace, setSelectedPlace }) {
   const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([])
+  const [suggestions, setSuggestions] = useState([]);
+
+  const [aqi, setAqi] = useState(null);
+
+  useEffect(() => {
+    const fetchAirQuality = async () => {
+      const params = {
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        current: ["pm10", "pm2_5"],
+        "forecast_days": 1,
+      };
+      const url = "https://air-quality-api.open-meteo.com/v1/air-quality";
+      const responses = await fetchWeatherApi(url, params);
+      const response = responses[0];
+      const current = response.current();
+      const weatherData = {
+        current: {
+          pm10: current.variables(0).value(),
+          pm2_5: current.variables(1).value(),
+        },
+      };
+
+      setAqi(calculateAQI(weatherData.current.pm2_5, weatherData.current.pm10));
+
+      console.log(
+        `\nCurrent pm10: ${weatherData.current.pm10}`,
+        `\nCurrent pm2_5: ${weatherData.current.pm2_5}`,
+      );
+      console.log(calculateAQI(weatherData.current.pm2_5, weatherData.current.pm10))
+    };
+
+    fetchAirQuality(); // call the async function
+  }, [coordinates]);
+
+
 
   function handleSelectSuggestion(suggestion) {
     setCoordinates({
@@ -63,45 +102,6 @@ export function RightContainer({ coordinates, setCoordinates, selectedPlace, set
     const results = await searchCity(value);
     setSuggestions(results);
   }
-
-
-  // const apiKey = import.meta.env.VITE_OPENCAGE_API_KEY;
-  // async function getCoordinates(query) {
-  //   try {
-  //     const response = await axios.get("https://api.opencagedata.com/geocode/v1/json", {
-  //       params: { q: query, key: apiKey },
-  //     });
-
-  //     console.log(response.data.results[0].geometry);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // }
-  // getCoordinates("Greater Manchester, England, United Kingdom");
-
-  // async function searchPlace(query) {
-  //   const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${apiKey}&limit=5`;
-
-  //   try {
-  //     const response = await fetch(url);
-  //     const data = await response.json();
-
-  //     if (data.results.length > 0) {
-  //       return data.results.map(result => ({
-  //         city: result.components.city || result.components.town || result.components.village,
-  //         country: result.components.country
-  //       }));
-  //     } else {
-  //       return [];
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching place:", error);
-  //     return [];
-  //   }
-  // }
-  // // Example usage
-  // searchPlace("Manchester, United Kingdom").then(suggestions => console.log(suggestions));
-
 
 
   return (
@@ -208,8 +208,8 @@ export function RightContainer({ coordinates, setCoordinates, selectedPlace, set
           <p>Air Quality</p>
           <div className='img-container'>
             <img src={veryPoor} />
-            <span className='rating'>5/5</span>
-            <span className='status'>Very Poor</span>
+            <span className='rating'>{aqi}/5</span>
+            <span className='status'>{aqi !== null ? airCondition[aqi] : "Loading..."}</span>
           </div>
         </div>
         <div className='status-container'>

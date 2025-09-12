@@ -1,0 +1,20 @@
+export function calculateAQI(pm25, pm10) {
+  let aqiPM25, aqiPM10;
+
+  // PM2.5 classification
+  if (pm25 <= 12) aqiPM25 = 1;
+  else if (pm25 <= 35) aqiPM25 = 2;
+  else if (pm25 <= 55) aqiPM25 = 3;
+  else if (pm25 <= 150) aqiPM25 = 4;
+  else aqiPM25 = 5;
+
+  // PM10 classification
+  if (pm10 <= 20) aqiPM10 = 1;
+  else if (pm10 <= 50) aqiPM10 = 2;
+  else if (pm10 <= 100) aqiPM10 = 3;
+  else if (pm10 <= 200) aqiPM10 = 4;
+  else aqiPM10 = 5;
+
+  // Final AQI = worst of the two
+  return Math.max(aqiPM25, aqiPM10);
+}
