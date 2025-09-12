@@ -18,3 +18,19 @@ export function calculateAQI(pm25, pm10) {
   // Final AQI = worst of the two
   return Math.max(aqiPM25, aqiPM10);
 }
+
+export function uvCategory(uv) {
+  if (uv < 3) return "Low";
+  if (uv < 6) return "Moderate";
+  if (uv < 8) return "High";
+  if (uv < 11) return "Very High";
+  return "Extreme";
+}
+
+export const airCondition = {
+  1: "Good",
+  2: "Fair",
+  3: "Moderate",
+  4: "Poor",
+  5: "very Poor"
+}

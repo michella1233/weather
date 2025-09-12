@@ -13,17 +13,24 @@ export function HomePage() {
     longitude: 106.8223
   });
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [uvIndex, setUvIndex] = useState(null);
+
+  const [sunrise, setSunrise] = useState(null)
 
   return (
     <div className='home-page-container'>
       <LeftContainer
         coordinates={coordinates}
+        setUvIndex= {setUvIndex}
+        setSunrise= {setSunrise}
       />
       <RightContainer
         coordinates={coordinates}
         setCoordinates={setCoordinates}
         selectedPlace={selectedPlace}
         setSelectedPlace={setSelectedPlace}
+        uvIndex={uvIndex}
+        sunrise={sunrise}
       />
     </div>
   )

@@ -1,16 +1,22 @@
 import './RightContainer.css'
 import position from './assets/position.png'
 import search from './assets/search.png'
-import veryPoor from './assets/very-poor.png'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
 import axios from 'axios'
 import { fetchWeatherApi } from 'openmeteo';
 import { calculateAQI } from './calculateAqi';
-import { airCondition } from './exportCondition'
+import { airCondition } from './calculateAqi';
+import { uvCategory } from './calculateAqi';
+
+import Fair from './assets/air-condition/Fair.png';
+import Good from './assets/air-condition/Good.png';
+import Moderate from './assets/air-condition/Moderate.png';
+import Poor from './assets/air-condition/Poor.png';
+import veryPoor from './assets/air-condition/very-poor.png';
 
 
-export function RightContainer({ coordinates, setCoordinates, selectedPlace, setSelectedPlace }) {
+export function RightContainer({ coordinates, setCoordinates, selectedPlace, setSelectedPlace, uvIndex }) {
   const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -37,17 +43,27 @@ export function RightContainer({ coordinates, setCoordinates, selectedPlace, set
       };
 
       setAqi(calculateAQI(weatherData.current.pm2_5, weatherData.current.pm10));
-
-      console.log(
-        `\nCurrent pm10: ${weatherData.current.pm10}`,
-        `\nCurrent pm2_5: ${weatherData.current.pm2_5}`,
-      );
-      console.log(calculateAQI(weatherData.current.pm2_5, weatherData.current.pm10))
     };
 
     fetchAirQuality(); // call the async function
   }, [coordinates]);
 
+
+  const airConditionImages = {
+  1: Good,
+  2: Fair,
+  3: Moderate,
+  4: Poor,
+  5: veryPoor,
+};
+
+const uvImages = {
+  "Low": Good,
+  "Moderate": Fair,
+  "High": Moderate,
+  "Very High": Poor,
+  "Extreme": veryPoor
+};
 
 
   function handleSelectSuggestion(suggestion) {
@@ -207,7 +223,7 @@ export function RightContainer({ coordinates, setCoordinates, selectedPlace, set
         <div className='status-container'>
           <p>Air Quality</p>
           <div className='img-container'>
-            <img src={veryPoor} />
+            <img src={airConditionImages[aqi]} />
             <span className='rating'>{aqi}/5</span>
             <span className='status'>{aqi !== null ? airCondition[aqi] : "Loading..."}</span>
           </div>
@@ -215,9 +231,9 @@ export function RightContainer({ coordinates, setCoordinates, selectedPlace, set
         <div className='status-container'>
           <p>Uv Index</p>
           <div className='img-container'>
-            <img src={veryPoor} />
-            <span className='rating'>11/15</span>
-            <span className='status'>Extreme</span>
+            <img src={uvImages[uvCategory(uvIndex)]} />
+            <span className='rating'>{uvIndex}/15</span>
+            <span className='status'>{uvIndex !== null ? uvCategory(uvIndex) : 'loading...'}</span>
           </div>
         </div>
       </div>

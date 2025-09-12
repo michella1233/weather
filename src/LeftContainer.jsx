@@ -16,7 +16,7 @@ dayjs.extend(advancedFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export function LeftContainer({ coordinates }) {
+export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
 
   const [degreeToggle, setDegreeToggle] = useState(true)
 
@@ -102,14 +102,20 @@ export function LeftContainer({ coordinates }) {
         code: weatherData.daily.card.weather_code[i],
       }));
 
+      const currentUv = Math.round(weatherData.daily.uv_index_max[0]);
+
+      const currentSunrise = weatherData.daily.sunrise[0];
+
       setCurrentTemp(currentTemp)
       setCurrentTime(currentTime)
       setCurrentWind(currentWind)
       setCurrentHumidity(currentHumidity)
       setCurrentRain(currentRain)
       setCards(formattedCards);
+      setUvIndex(currentUv)
       // console.log(`\nCurrent relative_humidity_2m: ${weatherData.current.relative_humidity_2m}`)
-      console.log("\nDaily data", weatherData.daily.card)
+      console.log("\nDaily data", weatherData.daily)
+      console.log('sunrise', currentSunrise)
     }
     temperatureNow();
   }, [coordinates])
