@@ -14,15 +14,13 @@ export function HomePage() {
   });
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [uvIndex, setUvIndex] = useState(null);
-
-  const [sunrise, setSunrise] = useState(null)
+  const [sunTimes, setSunTimes] = useState(null)
 
   return (
     <div className='home-page-container'>
       <LeftContainer
         coordinates={coordinates}
-        setUvIndex= {setUvIndex}
-        setSunrise= {setSunrise}
+        setUvIndex={setUvIndex}
       />
       <RightContainer
         coordinates={coordinates}
@@ -30,7 +28,8 @@ export function HomePage() {
         selectedPlace={selectedPlace}
         setSelectedPlace={setSelectedPlace}
         uvIndex={uvIndex}
-        sunrise={sunrise}
+        setSunTimes={setSunTimes}
+        sunTimes={sunTimes}
       />
     </div>
   )

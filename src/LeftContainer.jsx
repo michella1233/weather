@@ -16,7 +16,7 @@ dayjs.extend(advancedFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
+export function LeftContainer({ coordinates, setUvIndex}) {
 
   const [degreeToggle, setDegreeToggle] = useState(true)
 
@@ -36,9 +36,10 @@ export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
       const params = {
         "latitude": coordinates.latitude,
         "longitude": coordinates.longitude,
-        "daily": ["temperature_2m_max", "temperature_2m_min", "sunrise", "sunset", "uv_index_max", "precipitation_probability_max", "weather_code"],
+        "daily": ["temperature_2m_max", "temperature_2m_min", "uv_index_max", "precipitation_probability_max", "weather_code"],
         "current": ["temperature_2m", "wind_speed_10m", "relative_humidity_2m"],
         "timezone": "auto",
+        "timeformat": "unixtime",
       };
       const url = "https://api.open-meteo.com/v1/forecast";
       const responses = await fetchWeatherApi(url, params);
@@ -46,12 +47,8 @@ export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
       const response = responses[0];
       const timezone = response.timezone();
       const utcOffsetSeconds = response.utcOffsetSeconds();
-
       const current = response.current();
       const daily = response.daily();
-
-      const sunrise = daily.variables(2);
-      const sunset = daily.variables(3);
 
       const weatherData = {
         current: {
@@ -67,20 +64,13 @@ export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
             ),
             temperature_2m_max: daily.variables(0).valuesArray(),
             temperature_2m_min: daily.variables(1).valuesArray(),
-            weather_code: daily.variables(6).valuesArray(),
+            weather_code: daily.variables(4).valuesArray(),
           },
-          // Map Int64 values to according structure
-          sunrise: [...Array(sunrise.valuesInt64Length())].map(
-            (_, i) => new Date((Number(sunrise.valuesInt64(i)) + utcOffsetSeconds) * 1000)
-          ),
-          // Map Int64 values to according structure
-          sunset: [...Array(sunset.valuesInt64Length())].map(
-            (_, i) => new Date((Number(sunset.valuesInt64(i)) + utcOffsetSeconds) * 1000)
-          ),
-          uv_index_max: daily.variables(4).valuesArray(),
-          precipitation_probability_max: daily.variables(5).valuesArray(),
+          uv_index_max: daily.variables(2).valuesArray(),
+          precipitation_probability_max: daily.variables(3).valuesArray(),
         },
       }
+
 
       const currentTemp = Math.round(weatherData.current.temperature_2m);
 
@@ -94,7 +84,6 @@ export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
 
       const currentRain = weatherData.daily.precipitation_probability_max[0];
 
-
       const formattedCards = weatherData.daily.card.time.map((date, i) => ({
         time: date.toLocaleDateString("en-US", { weekday: "long" }),
         min: Math.round(weatherData.daily.card.temperature_2m_min[i]),
@@ -104,18 +93,13 @@ export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
 
       const currentUv = Math.round(weatherData.daily.uv_index_max[0]);
 
-      const currentSunrise = weatherData.daily.sunrise[0];
-
       setCurrentTemp(currentTemp)
       setCurrentTime(currentTime)
       setCurrentWind(currentWind)
       setCurrentHumidity(currentHumidity)
       setCurrentRain(currentRain)
       setCards(formattedCards);
-      setUvIndex(currentUv)
-      // console.log(`\nCurrent relative_humidity_2m: ${weatherData.current.relative_humidity_2m}`)
-      console.log("\nDaily data", weatherData.daily)
-      console.log('sunrise', currentSunrise)
+      setUvIndex(currentUv);
     }
     temperatureNow();
   }, [coordinates])
@@ -129,7 +113,7 @@ export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [currentTime]);  //update the minute
+  }, [currentTime]);
 
   return (
     <div className="left-container">
@@ -150,7 +134,7 @@ export function LeftContainer({ coordinates, setUvIndex, setSunrise }) {
       </div>
       <div className='date-time'>
         <div className='date'>{currentTime
-          ? dayjs(currentTime).format("Do MMM 'YY") // Example: 5th Aug '21
+          ? dayjs(currentTime).format("Do MMM 'YY")
           : "Loading..."}</div>
         <div className='day-time'>
           <span className='day'>{currentTime ? dayjs(currentTime).format("dddd") : ""}</span>

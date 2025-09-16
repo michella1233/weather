@@ -12,7 +12,7 @@
 .clock-card {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: start;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 45px;
   padding: 10px;
@@ -20,7 +20,7 @@
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.2);
   width: 80px;
-  height: 160px;
+  height: 135px;
 }
 
 .sunrise-sunset-span{
@@ -29,6 +29,7 @@
 }
 .clock-card2{
   margin-bottom: 40px;
+  height: 135px;
 }
 
 .clock {
@@ -52,13 +53,13 @@
 .hand.hour {
   width: 3px;
   height: 20px;
-  transform: rotate(60deg); /* example angle */
+  transform: rotate(0deg); /* example angle */
 }
 
 .hand.minute {
   width: 2px;
   height: 30px;
-  transform: rotate(120deg); /* example angle */
+  transform: rotate(0deg); /*example angle */
 }
 
 .time {

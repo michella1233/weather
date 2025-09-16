@@ -16,7 +16,7 @@ import Poor from './assets/air-condition/Poor.png';
 import veryPoor from './assets/air-condition/very-poor.png';
 
 
-export function RightContainer({ coordinates, setCoordinates, selectedPlace, setSelectedPlace, uvIndex }) {
+export function RightContainer({ coordinates, setCoordinates, selectedPlace, setSelectedPlace, uvIndex, sunTimes, setSunTimes }) {
   const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -45,25 +45,75 @@ export function RightContainer({ coordinates, setCoordinates, selectedPlace, set
       setAqi(calculateAQI(weatherData.current.pm2_5, weatherData.current.pm10));
     };
 
-    fetchAirQuality(); // call the async function
+    fetchAirQuality();
   }, [coordinates]);
+
+useEffect(() => {
+  (async () => {
+    const lat = coordinates.latitude;
+    const lng = coordinates.longitude;
+    const res = await fetch(
+      `https://api.sunrisesunset.io/json?lat=${lat}&lng=${lng}`
+    );
+    const data = await res.json();
+
+    const sunrise    = trimSeconds(data.results.sunrise);
+    const sunset     = trimSeconds(data.results.sunset);
+    const goldenHour = trimSeconds(data.results.golden_hour);
+
+    setSunTimes({ sunrise, sunset, goldenHour });
+  })();
+}, [coordinates]);
+
+function trimSeconds(timeStr) {
+  return timeStr.replace(/:\d{2}(?=\s[AP]M)/, "");
+}
+
+console.log("Sun times:", sunTimes);
+
+function parseHourMinute(timeStr) {
+  const [time, meridiem] = timeStr.split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+
+  if (meridiem === "PM" && hours !== 12) hours += 12;
+  if (meridiem === "AM" && hours === 12) hours = 0;
+
+  return { hours, minutes };
+}
+
+function anglesFromTime(timeStr) {
+  const { hours, minutes } = parseHourMinute(timeStr);
+  return {
+    minuteAngle: minutes * 6,
+    hourAngle: (hours % 12) * 30 + minutes * 0.5
+  };
+}
+
+const { hourAngle: sunriseHourAngle, minuteAngle: sunriseMinuteAngle } =
+  sunTimes ? anglesFromTime(sunTimes.sunrise) : { hourAngle: 0, minuteAngle: 0 };
+
+const { hourAngle: sunsetHourAngle, minuteAngle: sunsetMinuteAngle } =
+  sunTimes ? anglesFromTime(sunTimes.sunset) : { hourAngle: 0, minuteAngle: 0 };
+
+const { hourAngle: goldenHourAngle, minuteAngle: goldenMinuteAngle } =
+  sunTimes ? anglesFromTime(sunTimes.goldenHour) : { hourAngle: 0, minuteAngle: 0 };
 
 
   const airConditionImages = {
-  1: Good,
-  2: Fair,
-  3: Moderate,
-  4: Poor,
-  5: veryPoor,
-};
+    1: Good,
+    2: Fair,
+    3: Moderate,
+    4: Poor,
+    5: veryPoor,
+  };
 
-const uvImages = {
-  "Low": Good,
-  "Moderate": Fair,
-  "High": Moderate,
-  "Very High": Poor,
-  "Extreme": veryPoor
-};
+  const uvImages = {
+    "Low": Good,
+    "Moderate": Fair,
+    "High": Moderate,
+    "Very High": Poor,
+    "Extreme": veryPoor
+  };
 
 
   function handleSelectSuggestion(suggestion) {
@@ -73,7 +123,7 @@ const uvImages = {
     });
     setSelectedPlace(suggestion);
     setQuery(`${suggestion.city}, ${suggestion.country}`);
-    setSuggestions([]); // clear dropdown
+    setSuggestions([]);
     setShowSearch(false)
   }
 
@@ -94,10 +144,10 @@ const uvImages = {
       });
 
       return response.data.features.map(f => ({
-        city: f.properties?.name, // ✅ city name
-        country: f.properties?.context?.country?.name, // ✅ country name
-        full: f.properties?.place_formatted, // ✅ "Jakarta, Indonesia"
-        longitude: f.geometry?.coordinates[0], // ✅
+        city: f.properties?.name,
+        country: f.properties?.context?.country?.name,
+        full: f.properties?.place_formatted,
+        longitude: f.geometry?.coordinates[0],
         latitude: f.geometry?.coordinates[1]
       }));
     } catch (error) {
@@ -119,14 +169,13 @@ const uvImages = {
     setSuggestions(results);
   }
 
-
   return (
     <div className="right-container">
       <div className={showSearch ? "right-header-show-search" : 'right-header'}>
         <AnimatePresence mode="wait">
           {showSearch ? (
             <motion.div
-              key="search-container"  // ✅ branch 1
+              key="search-container"
               className="input-suggestion-cont"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -186,11 +235,14 @@ const uvImages = {
           <span className='sunrise-sunset-span'>Sunrise</span>
           <div className="clock-card">
             <div className="clock">
-              <div className="hand hour"></div>
-              <div className="hand minute"></div>
+              <div className="hand hour"
+                style={{ transform: `rotate(${sunriseHourAngle}deg)` }}
+              ></div>
+              <div className="hand minute"
+                style={{ transform: `rotate(${sunriseMinuteAngle}deg)` }}
+              ></div>
             </div>
-            <p className="time">5:45 AM</p>
-            <p className="label">6:00 AM</p>
+            <p className="time">{(sunTimes?.sunrise) || "Loading..."}</p>
           </div>
         </div>
 
@@ -198,11 +250,14 @@ const uvImages = {
           <span className='golden-hour-span'>Golden Hour</span>
           <div className="clock-card clock-card2">
             <div className="clock">
-              <div className="hand hour"></div>
-              <div className="hand minute"></div>
+              <div className="hand hour"
+                style={{ transform: `rotate(${goldenHourAngle}deg)` }}
+              ></div>
+              <div className="hand minute"
+                style={{ transform: `rotate(${goldenMinuteAngle}deg)` }}
+              ></div>
             </div>
-            <p className="time">6:38 PM</p>
-            <p className="label">6:52 PM</p>
+            <p className="time">{(sunTimes?.goldenHour) || 'Loading..'}</p>
           </div>
         </div>
 
@@ -210,11 +265,14 @@ const uvImages = {
           <span className='sunrise-sunset-span'>Sunset</span>
           <div className="clock-card">
             <div className="clock">
-              <div className="hand hour"></div>
-              <div className="hand minute"></div>
+              <div className="hand hour"
+                style={{ transform: `rotate(${sunsetHourAngle}deg)` }}
+              ></div>
+              <div className="hand minute"
+                style={{ transform: `rotate(${sunsetMinuteAngle}deg)` }}
+              ></div>
             </div>
-            <p className="time">7:10 PM</p>
-            <p className="label">7:15 PM</p>
+            <p className="time">{(sunTimes?.sunset) || "Loading..."}</p>
           </div>
         </div>
       </div>
